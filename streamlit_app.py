@@ -95,7 +95,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
                 value = None
         
             if name == "Ancho [cm]":
-                ancho = value
+                ancho = repr(attr.get("name", ""))
             elif name == "Alto [cm]":
                 alto = value
             elif name == "Fondo [cm]":
