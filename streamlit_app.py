@@ -85,6 +85,8 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
                 except (TypeError, ValueError):
                     net_w = None
                 break
+
+        ancho = alto = fondo = None
         for attr in item.get("attributes", []):
             if attr.get("name") == "Fondo [cm]":
                 try:
@@ -116,7 +118,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "SKU": info.get("SKU"),
             "Net Weight (kg)": net_w,
             "Total Weight (kg)": round(net_w * units, 3) if units is not None and net_w is not None else None,
-            "Volume" : round((ancho*alto*fondo)/1000000),3)if ancho is not None and alto is not None and fondo is not None else None,
+            "Volume": round((ancho * alto * fondo) / 1000000, 3)) if ancho is not None and alto is not None and fondo is not None else None,
             "Units": units,
             "Stock Disponible": info.get("Stock Disponible"),
             "Insuficiente?": "" if info.get("Stock Disponible", 0) >= units else "STOCK INSUFICIENTE"
