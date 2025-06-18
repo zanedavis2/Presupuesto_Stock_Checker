@@ -78,7 +78,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         units = item.get('units')
 
         net_w = None
-        for attr in p.get("attributes", []):
+        for attr in item.get("attributes", []):
             if attr.get("name") == "Peso Neto":
                 try:
                     net_w = float(attr.get("value"))
@@ -86,7 +86,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
                     net_w = None
                 break
         if net_w is None:
-            net_w = p.get("weight")
+            net_w = item.get("weight")
         
         if not pid:
             continue
