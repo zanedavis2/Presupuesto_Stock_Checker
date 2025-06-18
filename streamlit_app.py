@@ -87,39 +87,10 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
                 value = float(attr.get("value"))
             except (TypeError, ValueError):
                 continue
-
+                
             if "peso neto" in name:
                 net_w = value
 
-
-        ancho = alto = fondo = None  # initialize
-        
-        for attr in item.get("attributes", []):
-            name_raw = attr.get("name", "")
-            value_raw = attr.get("value", "")
-        
-            st.write("🔎 Attr →", name_raw, "| Raw value:", value_raw)
-        
-            try:
-                value = float(value_raw)
-            except (TypeError, ValueError):
-                st.write("⚠️ Could not convert:", value_raw)
-                continue
-        
-            name = name_raw.lower().replace('\xa0', ' ').strip()  # normalize whitespace
-        
-            if "ancho" in name:
-                ancho = value
-                st.write("✅ Found ancho:", value)
-            elif "alto" in name:
-                alto = value
-                st.write("✅ Found alto:", value)
-            elif "fondo" in name:
-                fondo = value
-                st.write("✅ Found fondo:", value)
-        
-        st.write("→ Final Parsed:", ancho, alto, fondo)
-        
         if net_w is None:
             net_w = item.get("weight")
                 
@@ -131,7 +102,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "SKU": info.get("SKU"),
             "Net Weight (kg)": net_w,
             "Total Weight (kg)": round(net_w * units, 3) if units is not None and net_w is not None else None,
-            "Volume": ancho,
+            #"Volume": ancho,
             "Units": units,
             "Stock Disponible": info.get("Stock Disponible"),
             "Insuficiente?": "" if info.get("Stock Disponible", 0) >= units else "STOCK INSUFICIENTE"
