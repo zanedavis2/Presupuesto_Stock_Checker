@@ -90,16 +90,38 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
             if "peso neto" in name:
                 net_w = value
-            elif "ancho" in name:
+
+
+        ancho = alto = fondo = None  # initialize
+        
+        for attr in item.get("attributes", []):
+            name_raw = attr.get("name", "")
+            value_raw = attr.get("value", "")
+        
+            st.write("🔎 Attr →", name_raw, "| Raw value:", value_raw)
+        
+            try:
+                value = float(value_raw)
+            except (TypeError, ValueError):
+                st.write("⚠️ Could not convert:", value_raw)
+                continue
+        
+            name = name_raw.lower().replace('\xa0', ' ').strip()  # normalize whitespace
+        
+            if "ancho" in name:
                 ancho = value
+                st.write("✅ Found ancho:", value)
             elif "alto" in name:
                 alto = value
+                st.write("✅ Found alto:", value)
             elif "fondo" in name:
                 fondo = value
-
-        if net_w is None:
-            net_w = item.get("weight")
+                st.write("✅ Found fondo:", value)
         
+        st.write("→ Final Parsed:", ancho, alto, fondo)
+                if net_w is None:
+                    net_w = item.get("weight")
+                
         if not pid:
             continue
         info = product_lookup.get(pid, {})
