@@ -78,27 +78,23 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         units = item.get('units')
 
         net_w = None
-        for attr in item.get("attributes", []):
-            if attr.get("name") == "Peso Neto":
-                try:
-                    net_w = float(attr.get("value"))
-                except (TypeError, ValueError):
-                    net_w = None
-                break
-
         ancho = alto = fondo = None
+        
         for attr in item.get("attributes", []):
-            name = attr.get("name")
+            raw_name = attr.get("name", "")
+            name = raw_name.lower().replace('\u00a0', ' ')  # remove weird spaces
             try:
                 value = float(attr.get("value"))
             except (TypeError, ValueError):
-                value = None
-        
-            if name == "Ancho [cm]":
-                ancho = repr(attr.get("name", ""))
-            elif name == "Alto [cm]":
+                continue
+
+            if "peso neto" in name:
+                net_w = value
+            elif "ancho" in name:
+                ancho = value
+            elif "alto" in name:
                 alto = value
-            elif name == "Fondo [cm]":
+            elif "fondo" in name:
                 fondo = value
 
         if net_w is None:
