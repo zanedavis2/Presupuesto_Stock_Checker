@@ -1,12 +1,9 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import requests
 
-import streamlit as st
-
+# --- AUTH ---
 password = st.text_input("Enter password", type="password")
-
 if password != st.secrets["app_password"]:
     st.stop()
 
@@ -17,15 +14,23 @@ PAGE_SIZE = 100
 ESTIMATE_URL = "https://api.holded.com/api/invoicing/v1/documents/estimate"
 PRODUCTS_URL = "https://api.holded.com/api/invoicing/v1/products"
 
-# --- Fetch Estimates ---
-@st.cache_data
+# --- Fetch Estimates (LIVE) ---
 def fetch_presupuestos():
-    resp = requests.get(ESTIMATE_URL, headers=HEADERS)
-    resp.raise_for_status()
-    return pd.DataFrame(resp.json())
+    all_estimates = []
+    page = 1
+    while True:
+        resp = requests.get(ESTIMATE_URL, headers=HEADERS, params={"page": page, "limit": PAGE_SIZE})
+        resp.raise_for_status()
+        chunk = resp.json().get("data", []) if isinstance(resp.json(), dict) else resp.json()
+        if not chunk:
+            break
+        all_estimates.extend(chunk)
+        if len(chunk) < PAGE_SIZE:
+            break
+        page += 1
+    return pd.DataFrame(all_estimates)
 
-# --- Fetch All Products ---
-@st.cache_data
+# --- Fetch Products (LIVE) ---
 def fetch_all_products():
     all_products = []
     page = 1
@@ -56,12 +61,12 @@ def build_product_lookup(products):
         }
     return lookup
 
-# --- Get Row Index by DocNum ---
+# --- Get Row Index ---
 def get_row_index_by_docnumber(df, doc_number):
     matches = df.index[df['docNumber'] == doc_number]
     return int(matches[0]) if not matches.empty else None
 
-# --- Build Output DataFrame ---
+# --- Build Output Table ---
 def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
     row = df_presupuesto.loc[row_idx]
     items = row.get('products') or []
@@ -71,19 +76,19 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         pid = item.get('productId') or item.get('id')
         units = item.get('units')
         net_w = item.get("weight")
-
         if not pid:
             continue
         info = product_lookup.get(pid, {})
         records.append({
             "Product": info.get("Product"),
             "SKU": info.get("SKU"),
-            "Net Weight (kg)" : net_w,
-            "Total Weight (kg)" : round(net_w * units,2) if units is not None and net_w is not None else None, 
+            "Net Weight (kg)": net_w,
+            "Total Weight (kg)": round(net_w * units, 2) if units is not None and net_w is not None else None,
             "Units": units,
             "Stock Disponible": info.get("Stock Disponible"),
             "Insuficiente?": "" if info.get("Stock Disponible", 0) >= units else "STOCK INSUFICIENTE"
         })
+
     return pd.DataFrame(records)
 
 # --- UI ---
