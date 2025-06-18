@@ -119,8 +119,9 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
                 st.write("✅ Found fondo:", value)
         
         st.write("→ Final Parsed:", ancho, alto, fondo)
-                if net_w is None:
-                    net_w = item.get("weight")
+        
+        if net_w is None:
+            net_w = item.get("weight")
                 
         if not pid:
             continue
