@@ -70,17 +70,20 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
     for item in items:
         pid = item.get('productId') or item.get('id')
         units = item.get('units')
+        net_w = item.get("weight")
+
         if not pid:
             continue
         info = product_lookup.get(pid, {})
         records.append({
             "Product": info.get("Product"),
             "SKU": info.get("SKU"),
+            "Net Weight (kg)" : net_w,
+            "Total Weight (kg)" : round(net_w * units,2) if units is not None and net_w is not None else None, 
             "Units": units,
             "Stock Disponible": info.get("Stock Disponible"),
             "Insuficiente?": "" if info.get("Stock Disponible", 0) >= units else "STOCK INSUFICIENTE"
         })
-
     return pd.DataFrame(records)
 
 # --- UI ---
