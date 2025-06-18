@@ -85,15 +85,26 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             name = raw_name.lower().replace('\u00a0', ' ')  # remove weird spaces
             try:
                 value = float(attr.get("value"))
+                
             except (TypeError, ValueError):
                 continue
-                
+
             if "peso neto" in name:
                 net_w = value
+            elif "ancho" in name:
+                ancho = value
+            elif "alto" in name:
+                alto = value
+            elif "fondo" in name:
+                fondo = value
 
         if net_w is None:
             net_w = item.get("weight")
-                
+        if None not in (ancho, alto, fondo):
+            volume = round((ancho * alto * fondo) / 1_000_000, 3)
+
+
+        
         if not pid:
             continue
         info = product_lookup.get(pid, {})
@@ -102,12 +113,11 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "SKU": info.get("SKU"),
             "Net Weight (kg)": net_w,
             "Total Weight (kg)": round(net_w * units, 3) if units is not None and net_w is not None else None,
-            #"Volume": ancho,
+            "Volume": volume,
             "Units": units,
             "Stock Disponible": info.get("Stock Disponible"),
             "Insuficiente?": "" if info.get("Stock Disponible", 0) >= units else "STOCK INSUFICIENTE"
         })
-    st.write("→ Parsed:", ancho, alto, fondo)
     return pd.DataFrame(records)
 
 # --- UI ---
