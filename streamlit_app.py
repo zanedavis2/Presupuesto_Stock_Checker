@@ -113,7 +113,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "Stock Disponible": info.get("Stock Disponible"),
             "Insuficiente?": "" if info.get("Stock Disponible", 0) >= units else "STOCK INSUFICIENTE"
         })
-
+    st.write("→ Parsed:", ancho, alto, fondo)
     return pd.DataFrame(records)
 
 # --- UI ---
