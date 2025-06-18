@@ -61,9 +61,10 @@ def build_product_lookup(products):
         }
     return lookup
 
-# --- Get Row Index ---
+# --- Get Row Index by DocNumber (case-insensitive) ---
 def get_row_index_by_docnumber(df, doc_number):
-    matches = df.index[df['docNumber'] == doc_number]
+    lower_doc = doc_number.lower()
+    matches = df.index[df['docNumber'].str.lower() == lower_doc]
     return int(matches[0]) if not matches.empty else None
 
 # --- Build Output Table ---
@@ -106,13 +107,15 @@ if doc_input:
             if row_idx is None:
                 st.error("DocNumber not found.")
             else:
+                original_docnum = presupuesto_df.loc[row_idx, 'docNumber']
                 df_result = get_products_info_for_row(row_idx, presupuesto_df, lookup)
                 if df_result.empty:
                     st.warning("No product data found in the selected presupuesto.")
                 else:
-                    st.success("Presupuesto details loaded!")
+                    st.success(f"Presupuesto '{original_docnum}' details loaded!")
                     st.dataframe(df_result)
                     csv = df_result.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Download CSV", csv, f"{doc_input}_stock.csv", "text/csv")
+                    st.download_button("📥 Download CSV", csv, f"{original_docnum}_stock.csv", "text/csv")
         except Exception as e:
             st.error(f"Something went wrong: {e}")
+
