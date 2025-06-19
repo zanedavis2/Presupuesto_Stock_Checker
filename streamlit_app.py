@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+import numpy as np
 
 # --- AUTH ---
 password = st.text_input("Enter password", type="password")
@@ -154,8 +155,42 @@ if doc_input:
                 else:
                     st.success(f"Presupuesto '{original_docnum}' details loaded!")
                     st.dataframe(df_result)
+
+                    if not df_result.empty:
+                        total_units = df_result["Units"].sum()
+                        total_weight = df_result["Total Weight (kg)"].sum(min_count=1)
+                        total_volume = df_result["Volume (m³)"].sum(min_count=1)
+                    
+                        # Handle None values
+                        total_weight = total_weight if pd.notnull(total_weight) else 0.0
+                        total_volume = total_volume if pd.notnull(total_volume) else 0.0
+                    
+                        pallets_by_weight = round(total_weight / 1400, 1)
+                        pallets_by_volume = round(total_volume / 2, 1)
+                        estimated_pallets = int(np.ceil(max(pallets_by_weight, pallets_by_volume)))
+                    
+                        # Summary table as a DataFrame
+                        summary_df = pd.DataFrame({
+                            "numProducts": [total_units, total_units, total_units],
+                            "WEIGHT": [f"{total_weight:.2f} kg", "", ""],
+                            "VOLUME": [f"{total_volume:.3f} m³", "", ""],
+                            "PALLETS": [
+                                f"{pallets_by_weight} (Estimated by Weight)",
+                                f"{pallets_by_volume} (Estimated by Volume)",
+                                f"{estimated_pallets} (Final Rounded Up)"
+                            ]
+                        }, index=["Weight-Based", "Volume-Based", "TOTAL"])
+                    
+                        st.subheader("📊 Estimated Pallet Summary")
+                        st.dataframe(summary_df)
+
+                    
                     csv = df_result.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Download CSV", csv, f"{original_docnum}_stock.csv", "text/csv")
+                    st.download_button("📥 Download Product Table as CSV", csv, f"{original_docnum}_stock.csv", "text/csv")
+
+                    csv = summary_df.to_csv(index=False).encode('utf-8')
+                    st.download_button("📥 Download Pallet Table as CSV", csv, f"{original_docnum}_pallets.csv", "text/csv")
+        
         except Exception as e:
             st.error(f"Something went wrong: {e}")
 
