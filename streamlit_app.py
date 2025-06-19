@@ -115,7 +115,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
         # Calculate volume if all dimensions are available
         if None not in (ancho, alto, fondo):
-            volume = round((ancho * alto * fondo) / 1_000_000, 3)
+            volume = round((ancho * alto * fondo) / 1_000_000, 5)
 
 
         # Append row
