@@ -100,13 +100,13 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             except (TypeError, ValueError):
                 continue
 
-            if "peso neto" in name:
+            if name == "Peso Neto":
                 net_w = value
-            elif "ancho" in name:
+            elif name == "Ancho [cm]":
                 ancho = value
-            elif "alto" in name:
+            elif name == "Alto [cm]":
                 alto = value
-            elif "fondo" in name:
+            elif name == "Fondo [cm]":
                 fondo = value
 
         # Fallback to 'weight' field if needed
