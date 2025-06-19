@@ -171,15 +171,22 @@ if doc_input:
                     
                         # Summary table as a DataFrame
                         summary_df = pd.DataFrame({
-                            "numProducts": [total_units, total_units, total_units],
+                            "numProducts": [total_units, "", ""],
                             "WEIGHT": [f"{total_weight:.2f} kg", "", ""],
                             "VOLUME": [f"{total_volume:.3f} m³", "", ""],
-                            "PALLETS": [
-                                f"{pallets_by_weight} (Estimated by Weight)",
-                                f"{pallets_by_volume} (Estimated by Volume)",
-                                f"{estimated_pallets} (Final Rounded Up)"
+                            "PALLETS": [pallets_by_weight, pallets_by_volume, estimated_pallets],
+                            "": [
+                                "Estimated Pallets by Weight",
+                                "Estimated Pallets by Volume",
+                                "PALLETS NEEDED"
                             ]
-                        }, index=["Weight-Based", "Volume-Based", "TOTAL"])
+                        })
+                        
+                        # Set custom row labels: only first row has "TOTAL"
+                        summary_df.index = ["TOTAL", "", ""]
+                        
+                        # Reorder columns so Description is at the far right
+                        summary_df = summary_df[["numProducts", "WEIGHT", "VOLUME", "PALLETS", ""]]
                     
                         st.subheader("📊 Estimated Pallet Summary")
                         st.dataframe(summary_df)
