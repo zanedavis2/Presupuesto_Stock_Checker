@@ -57,7 +57,8 @@ def build_product_lookup(products):
         lookup[pid] = {
             "Product": p.get("name"),
             "SKU": p.get("sku"),
-            "Stock Disponible": p.get("stock")
+            "Stock Disponible": p.get("stock"),
+            "Attributes": p.get("attributes")
         }
     return lookup
 
@@ -77,22 +78,25 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         pid = item.get('productId') or item.get('id')
         units = item.get('units')
 
+        # Skip if no product ID
+        if not pid:
+            continue
+
+        # Get product info from lookup
+        info = product_lookup.get(pid, {})
+
         # Initialize fields
         net_w = None
         ancho = alto = fondo = None
         volume = None
 
         # Extract attributes
-        for attr in item.get("attributes", []):
-            raw_name = attr.get("name", "")
-            value_raw = attr.get("value")
-
-            # Normalize name for fuzzy matching
-            name = raw_name.lower().replace('\u00a0', ' ').strip()
-
+        for attr in info.get("Attributes"):
+            name = attr.get("name", "")
+            
             # Try to convert value to float
             try:
-                value = float(value_raw)
+                value = float(attr.get("value"))
             except (TypeError, ValueError):
                 continue
 
@@ -112,15 +116,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         # Calculate volume if all dimensions are available
         if None not in (ancho, alto, fondo):
             volume = round((ancho * alto * fondo) / 1_000_000, 3)
-        else:
-            st.write(f"⚠️ Missing dimensions for product ID {pid}: Ancho={ancho}, Alto={alto}, Fondo={fondo}")
 
-        # Skip if no product ID
-        if not pid:
-            continue
-
-        # Get product info from lookup
-        info = product_lookup.get(pid, {})
 
         # Append row
         records.append({
