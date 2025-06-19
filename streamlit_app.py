@@ -91,7 +91,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         volume = None
 
         # Extract attributes
-        for attr in info.get("Attributes"):
+        for attr in info.get("Attributes") or []:
             name = attr.get("name", "")
             
             # Try to convert value to float
