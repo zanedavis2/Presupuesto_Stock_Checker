@@ -168,6 +168,8 @@ if doc_input:
                         pallets_by_weight = round(total_weight / 1400, 1)
                         pallets_by_volume = round(total_volume / 2, 1)
                         estimated_pallets = int(np.ceil(max(pallets_by_weight, pallets_by_volume)))
+                        if estimated_pallets == 0:
+                                estimated_pallets = 1
                     
                         # Summary table as a DataFrame
                         summary_df = pd.DataFrame({
