@@ -4,7 +4,7 @@ import requests
 import numpy as np
 
 # --- AUTH ---
-password = st.text_input("Enter password", type="password")
+password = st.text_input("🔐Ingrese la contraseña", type="password")
 if password != st.secrets["app_password"]:
     st.stop()
 
@@ -134,8 +134,8 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
     return pd.DataFrame(records)
 
 # --- UI ---
-st.title("📦 Presupuesto Stock Checker")
-doc_input = st.text_input("Enter DocNumber:")
+st.title("📦 Presupuesto Stock")
+doc_input = st.text_input("Ingrese el DocNumber:")
 
 if doc_input:
     with st.spinner("Retrieving data..."):
