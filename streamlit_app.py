@@ -211,7 +211,7 @@ if doc_input:
                         if row['Product'] and all(pd.isna(row[col]) for col in row.index if col != 'Product'):
                             return ['font-weight: bold; background-color: #f0f0f0'] * len(row)
                         if row['Product'] == "——— Subtotal":
-                            return ['font-weight: bold; background-color: #e8e8e8; text-align: right'] * len(row)
+                            return ['font-weight: bold; text-align: right'] * len(row)
                             
                         return [''] * len(row)
                     
