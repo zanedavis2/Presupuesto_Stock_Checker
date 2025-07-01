@@ -158,7 +158,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             subtotal_df[col] = pd.to_numeric(subtotal_df[col], errors="coerce")
                                              
         total_row = {
-            "Product": "——— Subtotal ———",
+            "Product": "Subtotal —————",
             "SKU": None,
             "Net Weight (kg)": None,
             "Total Weight (kg)": subtotal_df["Total Weight (kg)"].sum(min_count=1),
