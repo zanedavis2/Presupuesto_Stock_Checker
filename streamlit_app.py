@@ -267,7 +267,7 @@ if doc_input:
                     
                         # Summary table as a DataFrame
                         summary_df = pd.DataFrame({
-                            "numProducts": [total_units, "", ""],
+                            "numProducts": int([total_units, "", ""]),
                             "WEIGHT": [f"{total_weight:.2f} kg", "", ""],
                             "VOLUME": [f"{total_volume:.3f} m³", "", ""],
                             "PALLETS": [pallets_by_weight, pallets_by_volume, estimated_pallets],
