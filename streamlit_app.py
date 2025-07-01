@@ -224,7 +224,7 @@ if doc_input:
                             "Units": "{:,.0f}",
                             "Stock Disponible": "{:,.0f}",
                             "Falta": "{:,.0f}",
-                        }, na_rep="")  # 👈 this replaces NaN/None with blank
+                        }, na_rep="—")  # 👈 this replaces NaN/None with blank
                     )
 
                     st.dataframe(styled_df)
