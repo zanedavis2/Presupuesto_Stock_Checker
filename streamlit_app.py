@@ -146,7 +146,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
     for subcat, products in grouped.items():
         # Add subcategory header
         output.append({
-            "Product": f"— {subcat} —",
+            "Product": f"——— {subcat} ———",
             "SKU": None,
             "Net Weight (kg)": None,
             "Total Weight (kg)": None,
@@ -166,7 +166,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
         # Add subtotal row
         output.append({
-            "Product": "Subtotal",
+            "Product": "                                            Subtotal",
             "SKU": None,
             "Net Weight (kg)": None,
             "Total Weight (kg)": subtotal_df["Total Weight (kg)"].sum(min_count=1),
