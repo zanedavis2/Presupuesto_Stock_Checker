@@ -88,17 +88,21 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         if not pid:
             continue
 
-        info = product_lookup.get(pid, {})
-        subcategory = info.get("Subcategory", "Sin Subcategoría")
-
         # Initialize values
         net_w = None
         ancho = alto = fondo = None
         volume = None
+        subcategory = None
 
         # Extract attributes
         for attr in info.get("Attributes") or []:
             name = attr.get("name", "")
+            raw_value = attr.get("value")
+        
+            if name == "Product Line":
+                subcategory = raw_value  # Keep as string
+                continue
+
             try:
                 value = float(attr.get("value"))
             except (TypeError, ValueError):
@@ -112,11 +116,15 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
                 alto = value
             elif name == "Fondo [cm]":
                 fondo = value
+                
 
         # Fallback to weight field if necessary
         if net_w is None:
             net_w = item.get("weight") or info.get("Net Weight")
 
+        if subcategory is None:
+            subcategory = "Sin Product Line"
+            
         # Calculate volume
         if None not in (ancho, alto, fondo):
             volume = round((ancho * alto * fondo) / 1_000_000, 5)
