@@ -120,7 +120,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
         # Fallback to weight field if necessary
         if net_w is None:
-            net_w = item.get("weight") or info.get("Net Weight")
+            net_w = item.get("weight") or item.get("Net Weight")
 
         if subcategory is None:
             subcategory = "Sin Product Line"
@@ -130,13 +130,13 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             volume = round((ancho * alto * fondo) / 1_000_000, 5)
 
         # Determine stock sufficiency
-        stock = info.get("Stock Disponible", 0)
-        insuf = "" if not info.get("SKU") or stock >= units else "STOCK INSUFICIENTE"
-        falta = "" if stock >= units else f"{abs(stock - units)} unidades"
+        stock = item.get("stock", 0)
+        insuf = "" if not item.get("SKU") or stock >= units else "STOCK INSUFICIENTE"
+        falta = "" if stock >= units else abs(stock - units)
 
         product_data = {
-            "Product": info.get("Product"),
-            "SKU": info.get("SKU"),
+            "Product": item.get("Product"),
+            "SKU": item.get("SKU"),
             "Net Weight (kg)": net_w,
             "Total Weight (kg)": round(net_w * units, 3) if units is not None and net_w is not None else None,
             "Volume (m³)": volume,
