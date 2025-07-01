@@ -128,8 +128,8 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "Volume (m³)": volume,
             "Units": units,
             "Stock Disponible": info.get("Stock Disponible"),
-            "Insuficiente?": "" if info.get("Stock Disponible", 0) >= units else "STOCK INSUFICIENTE",
-            "Falta": "" if info.get("Stock Disponible", 0) >= units else f"{abs(info.get('Stock Disponible', 0) - units)} unidades"
+            "Insuficiente?": "" if not info.get("SKU") or info.get("Stock Disponible", 0) >= units else "STOCK INSUFICIENTE",
+            "Falta": "" if info.get("Stock Disponible", 0) >= units else f"{abs(info.get('Stock Disponible', 0) - units)}"
         })
 
     return pd.DataFrame(records)
