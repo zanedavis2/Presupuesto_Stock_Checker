@@ -205,6 +205,10 @@ if doc_input:
                             return ['font-weight: bold; background-color: #f0f0f0'] * len(row)
                         return [''] * len(row)
                     
+                    for col in ["Net Weight (kg)", "Total Weight (kg)", "Volume (m³)", "Units", "Stock Disponible", "Falta"]:
+                        df_result[col] = pd.to_numeric(df_result[col], errors='coerce')
+
+                    # Apply styling
                     styled_df = (
                         df_result
                         .style
@@ -216,8 +220,9 @@ if doc_input:
                             "Units": "{:,.0f}",
                             "Stock Disponible": "{:,.0f}",
                             "Falta": "{:,.0f}",
-                        }, na_rep="")  # Optional: hide 'NaN' values
+                        }, na_rep="")
                     )
+
                     st.dataframe(styled_df)
 
                     if not df_result.empty:
