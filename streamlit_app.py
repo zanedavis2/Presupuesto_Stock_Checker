@@ -158,7 +158,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             subtotal_df[col] = pd.to_numeric(subtotal_df[col], errors="coerce")
                                              
         total_row = {
-            "Product": "Subtotal —————",
+            "Product": "——— Subtotal",
             "SKU": None,
             "Net Weight (kg)": None,
             "Total Weight (kg)": subtotal_df["Total Weight (kg)"].sum(min_count=1),
@@ -210,6 +210,9 @@ if doc_input:
                     def highlight_subcategories(row):
                         if row['Product'] and all(pd.isna(row[col]) for col in row.index if col != 'Product'):
                             return ['font-weight: bold; background-color: #f0f0f0'] * len(row)
+                        if row['Product'] == "Subtotal":
+                            return ['font-weight: bold; background-color: #e8e8e8; text-align: right'] * len(row)
+                            
                         return [''] * len(row)
                     
                     # Apply styling and formatting
