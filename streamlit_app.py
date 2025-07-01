@@ -226,7 +226,7 @@ if doc_input:
                     
                     # Style function for subcategory header rows
                     def highlight_subcategories(row):
-                        if row['Product'] and all(pd.isna(row[col]) for col in row.index if col != 'Product'):
+                        if str(row['Product']).startswith('——'):
                             return ['font-weight: bold; background-color: #f0f0f0'] * len(row)
                         if row['Product'] == "——— Subtotal":
                             return ['font-weight: bold; text-align: right'] * len(row)
