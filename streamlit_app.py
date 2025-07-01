@@ -93,7 +93,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         net_w = None
         ancho = alto = fondo = None
         volume = None
-        subcategory = "Sin Product Line"
+        subcategory = "Sin línea de productos"
 
         for attr in attributes:
             name = attr.get("name", "")
