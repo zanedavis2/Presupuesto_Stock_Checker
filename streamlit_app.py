@@ -216,7 +216,7 @@ if doc_input:
                         .style
                         .apply(highlight_subcategories, axis=1)
                         .format({
-                            "Net Weight (kg)": "{:.2f}",
+                            "Net Weight (kg)": "{:.1f}",
                             "Total Weight (kg)": "{:.2f}",
                             "Volume (m³)": "{:.3f}",
                             "Units": "{:,.0f}",
