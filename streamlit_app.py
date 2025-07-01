@@ -200,7 +200,13 @@ if doc_input:
                     st.warning("No product data found in the selected presupuesto.")
                 else:
                     st.success(f"Presupuesto '{original_docnum}' details loaded!")
-                    st.dataframe(df_result)
+                    def highlight_subcategories(row):
+                        if row['Product'] and all(pd.isna(row[col]) for col in row.index if col != 'Product'):
+                            return ['font-weight: bold; background-color: #f0f0f0'] * len(row)
+                        return [''] * len(row)
+                    
+                    styled_df = df_result.style.apply(highlight_subcategories, axis=1)
+                    st.dataframe(styled_df)
 
                     if not df_result.empty:
                         total_units = df_result["Units"].sum()
