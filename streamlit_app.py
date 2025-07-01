@@ -75,9 +75,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
     items = row.get('products') or []
 
     if not isinstance(items, list):
-        raise TypeError(
-            f"Row {row_idx} 'products' must be a list, got {type(items)}"
-        )
+        raise TypeError(f"Row {row_idx} 'products' must be a list, got {type(items)}")
 
     grouped = {}
 
@@ -88,23 +86,25 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         if not pid:
             continue
 
+        info = product_lookup.get(pid, {})
+        attributes = info.get("Attributes") or []
+
         # Initialize values
         net_w = None
         ancho = alto = fondo = None
         volume = None
-        subcategory = None
+        subcategory = "Sin Product Line"
 
-        # Extract attributes
-        for attr in item.get("Attributes") or []:
+        for attr in attributes:
             name = attr.get("name", "")
             raw_value = attr.get("value")
-        
+
             if name == "Product Line":
-                subcategory = raw_value  # Keep as string
+                subcategory = raw_value or subcategory
                 continue
 
             try:
-                value = float(attr.get("value"))
+                value = float(raw_value)
             except (TypeError, ValueError):
                 continue
 
@@ -116,27 +116,23 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
                 alto = value
             elif name == "Fondo [cm]":
                 fondo = value
-                
 
-        # Fallback to weight field if necessary
+        # Fallback weight
         if net_w is None:
-            net_w = item.get("weight") or item.get("Net Weight")
+            net_w = item.get("weight") or info.get("Net Weight")
 
-        if subcategory is None:
-            subcategory = "Sin Product Line"
-            
         # Calculate volume
         if None not in (ancho, alto, fondo):
             volume = round((ancho * alto * fondo) / 1_000_000, 5)
 
-        # Determine stock sufficiency
-        stock = item.get("stock", 0)
-        insuf = "" if not item.get("SKU") or stock >= units else "STOCK INSUFICIENTE"
+        # Stock logic
+        stock = info.get("Stock Disponible", 0)
+        insuf = "" if not info.get("SKU") or stock >= units else "STOCK INSUFICIENTE"
         falta = "" if stock >= units else abs(stock - units)
 
         product_data = {
-            "Product": item.get("Product"),
-            "SKU": item.get("SKU"),
+            "Product": info.get("Product"),
+            "SKU": info.get("SKU"),
             "Net Weight (kg)": net_w,
             "Total Weight (kg)": round(net_w * units, 3) if units is not None and net_w is not None else None,
             "Volume (m³)": volume,
@@ -148,7 +144,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
         grouped.setdefault(subcategory, []).append(product_data)
 
-    # Flatten to include subcategory titles in the final DataFrame
+    # Create output with subcategory headers
     output = []
     for subcat, products in grouped.items():
         output.append({
@@ -165,6 +161,15 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         output.extend(products)
 
     df = pd.DataFrame(output)
+
+    # Ensure consistent column order
+    cols = [
+        "Product", "SKU", "Net Weight (kg)", "Total Weight (kg)",
+        "Volume (m³)", "Units", "Stock Disponible", "Insuficiente?", "Falta"
+    ]
+    df = df[cols]
+
+    return df
 
     # Reorder columns for Streamlit presentation
     cols = [
