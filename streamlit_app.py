@@ -95,7 +95,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         subcategory = None
 
         # Extract attributes
-        for attr in info.get("Attributes") or []:
+        for attr in item.get("Attributes") or []:
             name = attr.get("name", "")
             raw_value = attr.get("value")
         
