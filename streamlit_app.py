@@ -205,7 +205,19 @@ if doc_input:
                             return ['font-weight: bold; background-color: #f0f0f0'] * len(row)
                         return [''] * len(row)
                     
-                    styled_df = df_result.style.apply(highlight_subcategories, axis=1)
+                    styled_df = (
+                        df_result
+                        .style
+                        .apply(highlight_subcategories, axis=1)
+                        .format({
+                            "Net Weight (kg)": "{:.2f}",
+                            "Total Weight (kg)": "{:.2f}",
+                            "Volume (m³)": "{:.3f}",
+                            "Units": "{:,.0f}",
+                            "Stock Disponible": "{:,.0f}",
+                            "Falta": "{:,.0f}",
+                        }, na_rep="")  # Optional: hide 'NaN' values
+                    )
                     st.dataframe(styled_df)
 
                     if not df_result.empty:
