@@ -117,15 +117,12 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             elif name == "Fondo [cm]":
                 fondo = value
 
-        # Fallback weight
         if net_w is None:
             net_w = item.get("weight") or info.get("Net Weight")
 
-        # Calculate volume
         if None not in (ancho, alto, fondo):
             volume = round((ancho * alto * fondo) / 1_000_000, 5)
 
-        # Stock logic
         stock = info.get("Stock Disponible", 0)
         insuf = "" if not info.get("SKU") or stock >= units else "STOCK INSUFICIENTE"
         falta = "" if stock >= units else abs(stock - units)
@@ -144,34 +141,36 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
         grouped.setdefault(subcategory, []).append(product_data)
 
-    # Create output with subcategory headers
+    # Create output with subcategory headers and totals
     output = []
     for subcat, products in grouped.items():
-        output.append({
-            "Product": f"— {subcat} —",
-            "SKU": None,
-            "Net Weight (kg)": None,
-            "Total Weight (kg)": None,
-            "Volume (m³)": None,
-            "Units": None,
-            "Stock Disponible": None,
-            "Insuficiente?": None,
-            "Falta": None,
-        })
+        output.append({col: None for col in [
+            "Product", "SKU", "Net Weight (kg)", "Total Weight (kg)",
+            "Volume (m³)", "Units", "Stock Disponible", "Insuficiente?", "Falta"
+        ]})
+        output[-1]["Product"] = f"— {subcat} —"
+
         output.extend(products)
 
+        # Add subcategory total row
+        subtotal_df = pd.DataFrame(products)
+        total_row = {
+            "Product": "Subtotal",
+            "SKU": None,
+            "Net Weight (kg)": None,
+            "Total Weight (kg)": subtotal_df["Total Weight (kg)"].sum(min_count=1),
+            "Volume (m³)": subtotal_df["Volume (m³)"].sum(min_count=1),
+            "Units": subtotal_df["Units"].sum(min_count=1),
+            "Stock Disponible": None,
+            "Insuficiente?": None,
+            "Falta": subtotal_df["Falta"].sum(min_count=1)
+        }
+        output.append(total_row)
+
+    # Create final DataFrame
     df = pd.DataFrame(output)
 
     # Ensure consistent column order
-    cols = [
-        "Product", "SKU", "Net Weight (kg)", "Total Weight (kg)",
-        "Volume (m³)", "Units", "Stock Disponible", "Insuficiente?", "Falta"
-    ]
-    df = df[cols]
-
-    return df
-
-    # Reorder columns for Streamlit presentation
     cols = [
         "Product", "SKU", "Net Weight (kg)", "Total Weight (kg)",
         "Volume (m³)", "Units", "Stock Disponible", "Insuficiente?", "Falta"
