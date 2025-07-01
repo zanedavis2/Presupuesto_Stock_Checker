@@ -200,15 +200,17 @@ if doc_input:
                     st.warning("No product data found in the selected presupuesto.")
                 else:
                     st.success(f"Presupuesto '{original_docnum}' details loaded!")
+                    # Convert numeric columns safely
+                    for col in ["Net Weight (kg)", "Total Weight (kg)", "Volume (m³)", "Units", "Stock Disponible", "Falta"]:
+                        df_result[col] = pd.to_numeric(df_result[col], errors='coerce')
+                    
+                    # Style function for subcategory header rows
                     def highlight_subcategories(row):
                         if row['Product'] and all(pd.isna(row[col]) for col in row.index if col != 'Product'):
                             return ['font-weight: bold; background-color: #f0f0f0'] * len(row)
                         return [''] * len(row)
                     
-                    for col in ["Net Weight (kg)", "Total Weight (kg)", "Volume (m³)", "Units", "Stock Disponible", "Falta"]:
-                        df_result[col] = pd.to_numeric(df_result[col], errors='coerce')
-
-                    # Apply styling
+                    # Apply styling and formatting
                     styled_df = (
                         df_result
                         .style
@@ -220,7 +222,7 @@ if doc_input:
                             "Units": "{:,.0f}",
                             "Stock Disponible": "{:,.0f}",
                             "Falta": "{:,.0f}",
-                        }, na_rep="")
+                        }, na_rep="")  # 👈 this replaces NaN/None with blank
                     )
 
                     st.dataframe(styled_df)
