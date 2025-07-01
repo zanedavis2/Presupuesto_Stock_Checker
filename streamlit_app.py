@@ -83,7 +83,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         pid = item.get('productId') or item.get('id')
         units = item.get('units')
 
-        if not pid:
+        if not pid or pid not in product_lookup:
             continue
 
         info = product_lookup.get(pid, {})
@@ -141,44 +141,62 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
         grouped.setdefault(subcategory, []).append(product_data)
 
-    # Create output with subcategory headers and totals
+    # Build final output list
     output = []
     for subcat, products in grouped.items():
-        output.append({col: None for col in [
-            "Product", "SKU", "Net Weight (kg)", "Total Weight (kg)",
-            "Volume (m³)", "Units", "Stock Disponible", "Insuficiente?", "Falta"
-        ]})
-        output[-1]["Product"] = f"——— {subcat} ———"
+        # Add subcategory header
+        output.append({
+            "Product": f"— {subcat} —",
+            "SKU": None,
+            "Net Weight (kg)": None,
+            "Total Weight (kg)": None,
+            "Volume (m³)": None,
+            "Units": None,
+            "Stock Disponible": None,
+            "Insuficiente?": None,
+            "Falta": None,
+        })
 
         output.extend(products)
 
-        # Add subcategory total row
+        # Ensure numeric conversion for subtotal
         subtotal_df = pd.DataFrame(products)
         for col in ["Total Weight (kg)", "Volume (m³)", "Units", "Falta"]:
             subtotal_df[col] = pd.to_numeric(subtotal_df[col], errors="coerce")
-                                             
-        total_row = {
-            "Product": "                                    " + "Subtotal",
+
+        # Add subtotal row
+        output.append({
+            "Product": "Subtotal",
             "SKU": None,
             "Net Weight (kg)": None,
             "Total Weight (kg)": subtotal_df["Total Weight (kg)"].sum(min_count=1),
             "Volume (m³)": subtotal_df["Volume (m³)"].sum(min_count=1),
             "Units": subtotal_df["Units"].sum(min_count=1),
-            "Stock Disponible": subtotal_df["Stock Disponible"].sum(min_count=1),
+            "Stock Disponible": None,
             "Insuficiente?": None,
             "Falta": subtotal_df["Falta"].sum(min_count=1)
-        }
-        output.append(total_row)
+        })
 
-    # Create final DataFrame
+    # If no products matched, return empty DataFrame with expected structure
+    if not output:
+        return pd.DataFrame(columns=[
+            "Product", "SKU", "Net Weight (kg)", "Total Weight (kg)",
+            "Volume (m³)", "Units", "Stock Disponible", "Insuficiente?", "Falta"
+        ])
+
     df = pd.DataFrame(output)
 
     # Ensure consistent column order
-    cols = [
+    expected_cols = [
         "Product", "SKU", "Net Weight (kg)", "Total Weight (kg)",
         "Volume (m³)", "Units", "Stock Disponible", "Insuficiente?", "Falta"
     ]
-    df = df[cols]
+    for col in expected_cols:
+        if col not in df.columns:
+            df[col] = None
+    df = df[expected_cols]
+
+    return df
 
     return df
 # --- UI ---
@@ -199,7 +217,7 @@ if doc_input:
                 original_docnum = presupuesto_df.loc[row_idx, 'docNumber']
                 df_result = get_products_info_for_row(row_idx, presupuesto_df, lookup)
                 if df_result.empty:
-                    st.warning("No product data found in the selected presupuesto.")
+                    st.warning("No valid products found in the selected presupuesto. They may lack SKUs or attribute data.")
                 else:
                     st.success(f"Presupuesto '{original_docnum}' details loaded!")
                     # Convert numeric columns safely
