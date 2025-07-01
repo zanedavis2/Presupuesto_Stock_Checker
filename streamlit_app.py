@@ -147,14 +147,14 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         # Add subcategory header
         output.append({
             "Product": f"——— {subcat} ———",
-            "SKU": None,
-            "Net Weight (kg)": None,
-            "Total Weight (kg)": None,
-            "Volume (m³)": None,
-            "Units": None,
-            "Stock Disponible": None,
-            "Insuficiente?": None,
-            "Falta": None,
+            "SKU": "",
+            "Net Weight (kg)": "",
+            "Total Weight (kg)": "",
+            "Volume (m³)": "",
+            "Units": "",
+            "Stock Disponible": "",
+            "Insuficiente?": "",
+            "Falta": "",
         })
 
         output.extend(products)
@@ -167,13 +167,13 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         # Add subtotal row
         output.append({
             "Product": "                                            Subtotal",
-            "SKU": None,
-            "Net Weight (kg)": None,
+            "SKU": "",
+            "Net Weight (kg)": "",
             "Total Weight (kg)": subtotal_df["Total Weight (kg)"].sum(min_count=1),
             "Volume (m³)": subtotal_df["Volume (m³)"].sum(min_count=1),
             "Units": subtotal_df["Units"].sum(min_count=1),
-            "Stock Disponible": None,
-            "Insuficiente?": None,
+            "Stock Disponible": "",
+            "Insuficiente?": "",
             "Falta": subtotal_df["Falta"].sum(min_count=1)
         })
 
