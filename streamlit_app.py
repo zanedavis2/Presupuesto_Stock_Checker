@@ -154,6 +154,9 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
         # Add subcategory total row
         subtotal_df = pd.DataFrame(products)
+        for col in ["Total Weight (kg)", "Volume (m³)", "Units", "Falta"]:
+            subtotal_df[col] = pd.to_numeric(subtotal_df[col], errors="coerce"
+                                             
         total_row = {
             "Product": "Subtotal",
             "SKU": None,
@@ -161,7 +164,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "Total Weight (kg)": subtotal_df["Total Weight (kg)"].sum(min_count=1),
             "Volume (m³)": subtotal_df["Volume (m³)"].sum(min_count=1),
             "Units": subtotal_df["Units"].sum(min_count=1),
-            "Stock Disponible": None,
+            "Stock Disponible": subtotal_df["Stock Disponible"].sum(min_count=1),
             "Insuficiente?": None,
             "Falta": subtotal_df["Falta"].sum(min_count=1)
         }
