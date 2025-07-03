@@ -164,6 +164,9 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         for col in ["Total Weight (kg)", "Volume (m³)", "Units", "Falta"]:
             subtotal_df[col] = pd.to_numeric(subtotal_df[col], errors="coerce")
 
+        num_falta = subtotal_df['Falta'].sum(min_count=1)
+        num_falta = 0 if pd.isna(num_falta) else num_falta
+        
         # Add subtotal row
         output.append({
             "Product": "                                            Subtotal",
@@ -173,7 +176,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "Volume (m³)": subtotal_df["Volume (m³)"].sum(min_count=1),
             "Units": subtotal_df["Units"].sum(min_count=1),
             "Stock Disponible": "",
-            "Insuficiente?": f"Falta: {subtotal_df['Falta'].sum(min_count=1) or "0"}",
+            "Insuficiente?": f"Falta: {num_falta}",
             "Falta": ""
         })
 
