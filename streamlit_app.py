@@ -172,11 +172,11 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "Product": "                                            Subtotal",
             "SKU": "",
             "Net Weight (kg)": "",
-            "Total Weight (kg)": subtotal_df["Total Weight (kg)"].sum(min_count=1),
-            "Volume (m³)": subtotal_df["Volume (m³)"].sum(min_count=1),
-            "Units": subtotal_df["Units"].sum(min_count=1),
+            "Total Weight (kg)": round(subtotal_df["Total Weight (kg)"].sum(min_count=1),2),
+            "Volume (m³)": round(subtotal_df["Volume (m³)"].sum(min_count=1),5),
+            "Units": round(subtotal_df["Units"].sum(min_count=1),1),
             "Stock Disponible": "",
-            "Insuficiente?": f"Falta: {num_falta}",
+            "Insuficiente?": f"Falta: {num_falta}.0f",
             "Falta": ""
         })
 
