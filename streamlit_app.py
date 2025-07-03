@@ -176,7 +176,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "Volume (m³)": round(subtotal_df["Volume (m³)"].sum(min_count=1),5),
             "Units": round(subtotal_df["Units"].sum(min_count=1),1),
             "Stock Disponible": "",
-            "Insuficiente?": f"Falta: {num_falta}.0f",
+            "Insuficiente?": f"Falta: {num_falta}:.0f",
             "Falta": ""
         })
 
