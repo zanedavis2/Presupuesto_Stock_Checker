@@ -118,7 +118,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
                 fondo = value
 
         if net_w is None:
-            net_w = info.get("Net Weight")
+            net_w = item.get("weight") or info.get("Net Weight")
 
         if None not in (ancho, alto, fondo):
             volume = round((ancho * alto * fondo) / 1_000_000, 5)
