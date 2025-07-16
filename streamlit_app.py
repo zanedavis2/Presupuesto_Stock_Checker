@@ -290,13 +290,38 @@ if doc_input:
                         st.subheader("📊 Estimated Pallet Summary")
                         st.dataframe(summary_df)
 
+                    filename=f"{original_docnum}_stock.xlsx"
+                    excel_buffer = io.BytesIO()
+                    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                        df_result.to_excel(writer, index=False, sheet_name='Sheet1')
+                    excel_buffer.seek(0)
+                
+                    # Download button
+                    st.download_button(
+                        label="📥 Download Excel",
+                        data=excel_buffer,
+                        file_name=filename,
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
                     
-                    csv = df_result.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Download Product Table as CSV", csv, f"{original_docnum}_stock.csv", "text/csv")
-
                     csv = summary_df.to_csv(index=False).encode('utf-8')
                     st.download_button("📥 Download Pallet Table as CSV", csv, f"{original_docnum}_pallets.csv", "text/csv")
-        
+
+
+                     filename=f"{original_docnum}_pallets.xlsx"
+                        excel_buffer = io.BytesIO()
+                        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                            summary_df.to_excel(writer, index=False, sheet_name='Sheet1')
+                        excel_buffer.seek(0)
+                    
+                        # Download button
+                        st.download_button(
+                            label="📥 Download Excel",
+                            data=excel_buffer,
+                            file_name=filename,
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                    
         except Exception as e:
             st.error(f"Something went wrong: {e}")
 
