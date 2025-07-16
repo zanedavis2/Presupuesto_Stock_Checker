@@ -308,11 +308,11 @@ if doc_input:
                     st.download_button("📥 Download Pallet Table as CSV", csv, f"{original_docnum}_pallets.csv", "text/csv")
 
 
-                     filename=f"{original_docnum}_pallets.xlsx"
-                        excel_buffer = io.BytesIO()
-                        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                            summary_df.to_excel(writer, index=False, sheet_name='Sheet1')
-                        excel_buffer.seek(0)
+                    filename=f"{original_docnum}_pallets.xlsx"
+                    excel_buffer = io.BytesIO()
+                    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                        summary_df.to_excel(writer, index=False, sheet_name='Sheet1')
+                    excel_buffer.seek(0)
                     
                         # Download button
                         st.download_button(
