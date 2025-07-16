@@ -298,7 +298,7 @@ if doc_input:
                 
                     # Download button
                     st.download_button(
-                        label="📥 Download Excel",
+                        label="📥 Download Excel (Stock)",
                         data=excel_buffer,
                         file_name=filename,
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -316,7 +316,7 @@ if doc_input:
                     
                         # Download button
                         st.download_button(
-                            label="📥 Download Excel",
+                            label="📥 Download Excel (Pallets)",
                             data=excel_buffer,
                             file_name=filename,
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
