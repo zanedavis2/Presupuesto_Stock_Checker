@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import numpy as np
+import io
 
 # --- AUTH ---
 password = st.text_input("🔐Ingrese la contraseña", type="password")
