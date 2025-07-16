@@ -305,10 +305,7 @@ if doc_input:
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
                     
-                    csv = summary_df.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Download Pallet Table as CSV", csv, f"{original_docnum}_pallets.csv", "text/csv")
-
-
+        
                     filename=f"{original_docnum}_pallets.xlsx"
                     excel_buffer = io.BytesIO()
                     
