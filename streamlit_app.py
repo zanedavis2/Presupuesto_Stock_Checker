@@ -310,17 +310,18 @@ if doc_input:
 
                     filename=f"{original_docnum}_pallets.xlsx"
                     excel_buffer = io.BytesIO()
+                    
                     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                         summary_df.to_excel(writer, index=False, sheet_name='Sheet1')
                     excel_buffer.seek(0)
                     
                         # Download button
-                        st.download_button(
-                            label="📥 Download Excel (Pallets)",
-                            data=excel_buffer,
-                            file_name=filename,
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
+                    st.download_button(
+                        label="📥 Download Excel (Pallets)",
+                        data=excel_buffer,
+                        file_name=filename,
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
                     
         except Exception as e:
             st.error(f"Something went wrong: {e}")
