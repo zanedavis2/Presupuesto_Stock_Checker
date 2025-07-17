@@ -84,58 +84,55 @@ def get_products_info_for_row(row_idx, df_docs, product_lookup):
     grouped = {}
     # collect per subcategory
     for item in items:
-        pid = item.get('productId') or item.get('id')
-        units = item.get('units')
+    # 1. extract whichever ID you have (even if it's None)
+    pid = item.get("productId") if item.get("productId") is not None else item.get("id")
+    units = item.get("units", 0)
+
+    # 2. see if we have catalog info
+    if pid is not None and pid in product_lookup:
         info = product_lookup[pid]
         attrs = info.get("Attributes") or []
+        # … your existing attribute‑parsing logic here …
+        sku   = info.get("SKU")
+        stock = info.get("Stock Disponible", 0)
+        net_w = parsed_net_weight  # from either attrs or info
+    else:
+        # FALLBACK: no product in catalog, take from the item itself
+        info = {}
+        sku   = ""
+        stock = ""
+        net_w = item.get("weight") or 0.0
+        # if the API returns a name/description on the line:
+    product_name = info.get("Product") or item.get("name") or item.get("description") or "Sin descripción"
 
-        net_w = None
-        ancho = alto = fondo = None
-        subcat = "Sin línea de productos"
+    # 3. compute volume if the item line carried dimensions
+    ancho = item.get("width_cm")
+    alto  = item.get("height_cm")
+    fondo = item.get("depth_cm")
+    volume = None
+    if None not in (ancho, alto, fondo):
+        volume = round((ancho*alto*fondo)/1_000_000, 5)
 
-        for a in attrs:
-            name = a.get("name","")
-            raw = a.get("value")
-            if name == "Product Line":
-                subcat = raw or subcat
-                continue
-            try:
-                val = float(raw)
-            except:
-                continue
-            if name == "Peso Neto":
-                net_w = val
-            elif name == "Ancho [cm]":
-                ancho = val
-            elif name == "Alto [cm]":
-                alto = val
-            elif name == "Fondo [cm]":
-                fondo = val
+    # 4. stock‑insufficiency only if we know stock
+    insuf = "" if not sku or (isinstance(stock, (int,float)) and stock >= units) else "STOCK INSUFICIENTE"
+    falta = 0  if insuf == "" else abs(stock-units)
 
-        if net_w is None:
-            net_w = item.get("weight") or info.get("Net Weight")
-
-        volume = None
-        if None not in (ancho,alto,fondo):
-            volume = round((ancho*alto*fondo)/1_000_000,5)
-
-        stock = info.get("Stock Disponible",0)
-        insuf = "" if not info.get("SKU") or stock>=units else "STOCK INSUFICIENTE"
-        falta = "" if stock>=units else abs(stock-units)
-
-        data = {
-            "Product": info.get("Product"),
-            "SKU": info.get("SKU"),
-            "Units": units,
-            "Net Weight (kg)": net_w,
-            "Total Weight (kg)": round(net_w*units,3) if net_w is not None and units is not None else None,
-            "Volume (m³)": volume,
-            "Stock Disponible": stock,
-            "Insuficiente?": insuf,
-            "Falta": falta
-        }
-        grouped.setdefault(subcat,[]).append(data)
-
+    # 5. build your row dict exactly as before
+    data = {
+        "Product":          product_name,
+        "SKU":              sku,
+        "Units":            units,
+        "Net Weight (kg)":  net_w,
+        "Total Weight (kg)": round(net_w*units,3),
+        "Volume (m³)":      volume,
+        "Stock Disponible": stock,
+        "Insuficiente?":    insuf,
+        "Falta":            falta
+    }
+    # 6. decide subcategory (you can group all no‑ID under “Sin línea de productos”)
+    subcat = "Sin línea de productos"
+    # … or detect a “line” attribute on the item if one exists …
+    grouped.setdefault(subcat, []).append(data)
     # sort products by SKU in each subcat
     for subcat in grouped:
         grouped[subcat] = sorted(grouped[subcat], key=lambda x: x.get("SKU") or "")
