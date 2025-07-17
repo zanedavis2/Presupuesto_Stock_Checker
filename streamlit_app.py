@@ -212,7 +212,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         "Volume (m³)", "Subtotal > Volume (m³)","Stock Disponible","Insuficiente?","Falta", "Subtotal > Falta"
     ]
     for col in header_cols:
-        df.loc[header_mask, col] = df.loc[header_mask, col].fillna(" ")
+        df.loc[header_mask, col] = df.loc[header_mask, col].fillna("")
 
 
     subtotal_mask = df["Product"].str.contains("Subtotal", na=False)
