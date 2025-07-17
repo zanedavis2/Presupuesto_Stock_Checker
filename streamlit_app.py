@@ -281,7 +281,6 @@ if doc_input:
                     )
 
         except Exception as e:
-            st.error(f"Something went wrong: {e}")
            st.error(f"Something went wrong: {e}")
 
             # 2) Grab the full traceback
