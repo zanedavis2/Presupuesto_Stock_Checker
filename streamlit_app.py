@@ -178,19 +178,18 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
         # Add a subtotal row that only fills the new Subtotal >… columns
         output.append({
-            "Product": f"——— Subtotal {subcat} ———",
+            "Product": f"                                    Subtotal {subcat}",
             "SKU": "",
             "Net Weight (kg)": "",
             "Total Weight (kg)": "",
+            "Subtotal > Total Weight (kg)": sum_weight,
             "Volume (m³)": "",
+            "Subtotal > Volume (m³)":         sum_volume,
             "Units": "",
+            "Subtotal > Units":                sum_units,
             "Stock Disponible": "",
             "Insuficiente?": "",
-            "Falta": "",
-            # new subtotal columns
-            "Subtotal > Total Weight (kg)": sum_weight,
-            "Subtotal > Volume (m³)":         sum_volume,
-            "Subtotal > Units":                sum_units,
+            "Falta": "",            
             "Subtotal > Falta":                num_falta
         })
 
