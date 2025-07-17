@@ -220,11 +220,11 @@ if doc_input:
             if idx is None:
                 st.error(f"{doc_type} not found.")
             else:
-                st.write(df_docs.loc[idx])
                 original = df_docs.loc[idx, 'docNumber']
                 df_res = get_products_info_for_row(idx, df_docs, lookup)
 
                 if df_res.empty:
+                    st.write(df_docs.loc[idx])
                     st.warning("No valid products found.")
                 else:
                     st.success(f"{doc_type} '{original}' loaded!")
