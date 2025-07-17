@@ -3,7 +3,6 @@ import pandas as pd
 import requests
 import numpy as np
 import io
-import traceback
 
 # --- AUTH ---
 password = st.text_input("🔐Ingrese la contraseña", type="password")
@@ -20,7 +19,7 @@ ENDPOINTS = {
 }
 PRODUCTS_URL = "https://api.holded.com/api/invoicing/v1/products"
 
-# --- Fetch Documents (either estimates or sales orders) ---
+# --- Fetch Documents (Estimates or Sales Orders) ---
 def fetch_documents(url):
     all_docs = []
     page = 1
@@ -37,7 +36,7 @@ def fetch_documents(url):
         page += 1
     return pd.DataFrame(all_docs)
 
-# --- Fetch Products (LIVE) ---
+# --- Fetch Products ---
 def fetch_all_products():
     all_products = []
     page = 1
@@ -69,194 +68,240 @@ def build_product_lookup(products):
         }
     return lookup
 
-# --- Get Row Index by DocNumber (case-insensitive) ---
+# --- Find Row by DocNumber ---
 def get_row_index_by_docnumber(df, doc_number):
     lower_doc = doc_number.lower()
     matches = df.index[df['docNumber'].str.lower() == lower_doc]
     return int(matches[0]) if not matches.empty else None
 
-# --- Build Output Table (unchanged) ---
-def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
-    row = df_presupuesto.loc[row_idx]
+# --- Build Output Table with Subtotals ---
+def get_products_info_for_row(row_idx, df_docs, product_lookup):
+    row = df_docs.loc[row_idx]
     items = row.get('products') or []
-
     if not isinstance(items, list):
         raise TypeError(f"Row {row_idx} 'products' must be a list, got {type(items)}")
 
     grouped = {}
+    # collect per subcategory
     for item in items:
         pid = item.get('productId') or item.get('id')
         units = item.get('units')
         if not pid or pid not in product_lookup:
             continue
-        info = product_lookup.get(pid, {})
-        attributes = info.get("Attributes") or []
+        info = product_lookup[pid]
+        attrs = info.get("Attributes") or []
 
         net_w = None
         ancho = alto = fondo = None
-        volume = None
-        subcategory = "Sin línea de productos"
+        subcat = "Sin línea de productos"
 
-        for attr in attributes:
-            name = attr.get("name", "")
-            raw_value = attr.get("value")
+        for a in attrs:
+            name = a.get("name","")
+            raw = a.get("value")
             if name == "Product Line":
-                subcategory = raw_value or subcategory
+                subcat = raw or subcat
                 continue
             try:
-                value = float(raw_value)
-            except (TypeError, ValueError):
+                val = float(raw)
+            except:
                 continue
             if name == "Peso Neto":
-                net_w = value
+                net_w = val
             elif name == "Ancho [cm]":
-                ancho = value
+                ancho = val
             elif name == "Alto [cm]":
-                alto = value
+                alto = val
             elif name == "Fondo [cm]":
-                fondo = value
+                fondo = val
 
         if net_w is None:
             net_w = item.get("weight") or info.get("Net Weight")
 
-        if None not in (ancho, alto, fondo):
-            volume = round((ancho * alto * fondo) / 1_000_000, 5)
+        volume = None
+        if None not in (ancho,alto,fondo):
+            volume = round((ancho*alto*fondo)/1_000_000,5)
 
-        stock = info.get("Stock Disponible", 0)
-        insuf = "" if not info.get("SKU") or stock >= units else "STOCK INSUFICIENTE"
-        falta = "" if stock >= units else abs(stock - units)
+        stock = info.get("Stock Disponible",0)
+        insuf = "" if not info.get("SKU") or stock>=units else "STOCK INSUFICIENTE"
+        falta = "" if stock>=units else abs(stock-units)
 
-        product_data = {
+        data = {
             "Product": info.get("Product"),
             "SKU": info.get("SKU"),
-            "Net Weight (kg)": net_w,
-            "Total Weight (kg)": round(net_w * units, 3) if units is not None and net_w is not None else None,
-            "Volume (m³)": volume,
             "Units": units,
+            "Net Weight (kg)": net_w,
+            "Total Weight (kg)": round(net_w*units,3) if net_w is not None and units is not None else None,
+            "Volume (m³)": volume,
             "Stock Disponible": stock,
             "Insuficiente?": insuf,
-            "Falta": falta,
+            "Falta": falta
         }
-        grouped.setdefault(subcategory, []).append(product_data)
+        grouped.setdefault(subcat,[]).append(data)
+
+    # sort products by SKU in each subcat
+    for subcat in grouped:
+        grouped[subcat] = sorted(grouped[subcat], key=lambda x: x.get("SKU") or "")
 
     output = []
-    for subcat, products in grouped.items():
-        # Header
-        output.append({k: "" for k in [
-            "Product","SKU","Net Weight (kg)","Total Weight (kg)",
-            "Volume (m³)","Units","Stock Disponible","Insuficiente?","Falta"
+    for subcat, prods in grouped.items():
+        # header row
+        output.append({k:"" for k in [
+            "SKU","Product","Units","Subtotal > Units",
+            "Net Weight (kg)","Total Weight (kg)","Subtotal > Total Weight (kg)",
+            "Volume (m³)","Subtotal > Volume (m³)",
+            "Stock Disponible","Insuficiente?","Falta","Subtotal > Falta"
         ]})
         output[-1]["Product"] = f"——— {subcat} ———"
-        # Items
-        output.extend(products)
-        # Subtotal
-        subtotal_df = pd.DataFrame(products)
-        for col in ["Total Weight (kg)", "Volume (m³)", "Units", "Falta"]:
-            subtotal_df[col] = pd.to_numeric(subtotal_df[col], errors="coerce")
-        num_falta = subtotal_df['Falta'].sum(min_count=1)
-        num_falta = 0 if pd.isna(num_falta) else num_falta
+
+        # product rows
+        output.extend(prods)
+
+        # subtotal calculations
+        tmp = pd.DataFrame(prods)
+        for c in ["Units","Total Weight (kg)","Volume (m³)","Falta"]:
+            tmp[c] = pd.to_numeric(tmp[c],errors="coerce")
+        sum_units  = tmp["Units"].sum(min_count=1)
+        sum_weight = tmp["Total Weight (kg)"].sum(min_count=1)
+        sum_vol    = tmp["Volume (m³)"].sum(min_count=1)
+        sum_falta  = tmp["Falta"].sum(min_count=1)
+        sum_units  = 0 if pd.isna(sum_units) else sum_units
+        sum_weight = 0 if pd.isna(sum_weight) else sum_weight
+        sum_vol    = 0 if pd.isna(sum_vol) else sum_vol
+        sum_falta  = 0 if pd.isna(sum_falta) else sum_falta
+
         output.append({
-            "Product": " Subtotal",
             "SKU": "",
+            "Product": f" Subtotal {subcat}",
+            "Units": "",
+            "Subtotal > Units": round(sum_units,1),
             "Net Weight (kg)": "",
-            "Total Weight (kg)": round(subtotal_df["Total Weight (kg)"].sum(min_count=1), 2),
-            "Volume (m³)": round(subtotal_df["Volume (m³)"].sum(min_count=1), 5),
-            "Units": round(subtotal_df["Units"].sum(min_count=1), 1),
+            "Total Weight (kg)": "",
+            "Subtotal > Total Weight (kg)": round(sum_weight,2),
+            "Volume (m³)": "",
+            "Subtotal > Volume (m³)": round(sum_vol,5),
             "Stock Disponible": "",
-            "Insuficiente?": f"Falta: {num_falta:.0f}",
-            "Falta": ""
+            "Insuficiente?": "",
+            "Falta": "",
+            "Subtotal > Falta": round(sum_falta,0)
         })
 
     if not output:
         return pd.DataFrame(columns=[
-            "Product","SKU","Net Weight (kg)","Total Weight (kg)",
-            "Volume (m³)","Units","Stock Disponible","Insuficiente?","Falta"
+            "SKU","Product","Units","Subtotal > Units",
+            "Net Weight (kg)","Total Weight (kg)","Subtotal > Total Weight (kg)",
+            "Volume (m³)","Subtotal > Volume (m³)",
+            "Stock Disponible","Insuficiente?","Falta","Subtotal > Falta"
         ])
 
     df = pd.DataFrame(output)
-    expected_cols = [
-        "Product","SKU","Net Weight (kg)","Total Weight (kg)",
-        "Volume (m³)","Units","Stock Disponible","Insuficiente?","Falta"
+
+    # fill missing subtotals with zeros
+    mask = df["Product"].str.contains("Subtotal", na=False)
+    for col in ["Subtotal > Units","Subtotal > Total Weight (kg)",
+                "Subtotal > Volume (m³)","Subtotal > Falta"]:
+        df.loc[mask, col] = df.loc[mask, col].fillna(0)
+
+    # enforce column order
+    cols = [
+        "SKU","Product","Units","Subtotal > Units",
+        "Net Weight (kg)","Total Weight (kg)","Subtotal > Total Weight (kg)",
+        "Volume (m³)","Subtotal > Volume (m³)",
+        "Stock Disponible","Insuficiente?","Falta","Subtotal > Falta"
     ]
-    for col in expected_cols:
-        if col not in df.columns:
-            df[col] = None
-    return df[expected_cols]
+    return df[cols]
 
 # --- UI ---
 st.title("📦 Presupuesto / Pedido Stock")
 
-# choose document type
-doc_type = st.selectbox("Seleccione tipo de documento", ["Presupuesto", "Pedido"])
+doc_type = st.selectbox("Seleccione tipo de documento", ["Presupuesto","Pedido"])
 url = ENDPOINTS[doc_type]
-
-# input number
 doc_input = st.text_input(f"Ingrese el número de {doc_type}:")
 
 if doc_input:
     with st.spinner("Retrieving data..."):
         try:
-            # fetch the chosen docs + products
             df_docs = fetch_documents(url)
-            all_products = fetch_all_products()
-            lookup = build_product_lookup(all_products)
+            all_prods = fetch_all_products()
+            lookup = build_product_lookup(all_prods)
 
-            row_idx = get_row_index_by_docnumber(df_docs, doc_input)
-            if row_idx is None:
+            idx = get_row_index_by_docnumber(df_docs, doc_input)
+            if idx is None:
                 st.error(f"{doc_type} not found.")
             else:
-                original_docnum = df_docs.loc[row_idx, 'docNumber']
-                df_result = get_products_info_for_row(row_idx, df_docs, lookup)
+                original = df_docs.loc[idx, 'docNumber']
+                df_res = get_products_info_for_row(idx, df_docs, lookup)
 
-                if df_result.empty:
-                    st.warning("No valid products found. They may lack SKUs or attributes.")
+                if df_res.empty:
+                    st.warning("No valid products found.")
                 else:
-                    st.success(f"{doc_type} '{original_docnum}' details loaded!")
+                    st.success(f"{doc_type} '{original}' loaded!")
+
+                    # numeric conversion on all numeric-looking cols
+                    num_cols = [
+                        "Units","Subtotal > Units",
+                        "Net Weight (kg)","Total Weight (kg)","Subtotal > Total Weight (kg)",
+                        "Volume (m³)","Subtotal > Volume (m³)",
+                        "Stock Disponible","Falta","Subtotal > Falta"
+                    ]
+                    for c in num_cols:
+                        df_res[c] = pd.to_numeric(df_res[c], errors='coerce')
+
+                    # overall TOTAL row
+                    totals = {
+                        "SKU": "",
+                        "Product": "——— TOTAL ———",
+                        "Units": df_res["Units"].sum(min_count=1),
+                        "Subtotal > Units": "",
+                        "Net Weight (kg)": df_res["Net Weight (kg)"].sum(min_count=1),
+                        "Total Weight (kg)": df_res["Total Weight (kg)"].sum(min_count=1),
+                        "Subtotal > Total Weight (kg)": "",
+                        "Volume (m³)": df_res["Volume (m³)"].sum(min_count=1),
+                        "Subtotal > Volume (m³)": "",
+                        "Stock Disponible": df_res["Stock Disponible"].sum(min_count=1),
+                        "Insuficiente?": "",
+                        "Falta": df_res["Falta"].sum(min_count=1),
+                        "Subtotal > Falta": ""
+                    }
+                    df_res = pd.concat([df_res, pd.DataFrame([totals])], ignore_index=True)
 
                     # styling
-                    def highlight_headers(row):
-                        prod = str(row["Product"])
+                    def highlight_rows(r):
+                        prod = str(r["Product"])
                         if prod.startswith("———"):
-                            return ["font-weight: bold; background-color: #f0f0f0"] * len(row)
-                        return [""] * len(row)
+                            return ["font-weight: bold; background-color: #f0f0f0"] * len(r)
+                        if prod.strip().startswith("Subtotal"):
+                            return ["font-weight: bold; text-align: right"] * len(r)
+                        return [""] * len(r)
 
-                    numeric_cols = [
-                        "Net Weight (kg)",
-                        "Total Weight (kg)",
-                        "Volume (m³)",
-                        "Units",
-                        "Stock Disponible",
-                        "Falta"
-                    ]
-                    
-                    # this will turn any leftover strings ("" or "—" or anything) into NaN
-                    df_result[numeric_cols] = df_result[numeric_cols].apply(pd.to_numeric, errors="coerce")
-                    
-                    styled_df = (
-                        df_result.style
-                                 .apply(highlight_headers, axis=1)
-                                 .format({
-                                    "Net Weight (kg)": "{:.2f}",
-                                    "Total Weight (kg)": "{:.2f}",
-                                    "Volume (m³)": "{:.3f}",
-                                    "Units": "{:,.0f}",
-                                    "Stock Disponible": "{:,.0f}",
-                                    "Falta": "{:,.0f}",
-                                }, na_rep="—")
+                    styled = (
+                        df_res.style
+                              .apply(highlight_rows, axis=1)
+                              .format({
+                                  "Units": "{:,.0f}",
+                                  "Subtotal > Units": "{:,.0f}",
+                                  "Net Weight (kg)": "{:.2f}",
+                                  "Total Weight (kg)": "{:.2f}",
+                                  "Subtotal > Total Weight (kg)": "{:.2f}",
+                                  "Volume (m³)": "{:.3f}",
+                                  "Subtotal > Volume (m³)": "{:.3f}",
+                                  "Stock Disponible": "{:,.0f}",
+                                  "Falta": "{:,.0f}",
+                                  "Subtotal > Falta": "{:,.0f}"
+                              }, na_rep="—")
                     )
 
-                    st.dataframe(styled_df)
+                    st.dataframe(styled)
 
                     # pallet summary
-                    total_units  = df_result["Units"].sum()
-                    total_weight = df_result["Total Weight (kg)"].sum(min_count=1) or 0
-                    total_volume = df_result["Volume (m³)"].sum(min_count=1) or 0
+                    total_units  = df_res["Units"].sum(min_count=1) or 0
+                    total_weight = df_res["Total Weight (kg)"].sum(min_count=1) or 0
+                    total_volume = df_res["Volume (m³)"].sum(min_count=1) or 0
 
-                    pw = round(total_weight / 1400, 3)
-                    pv = round(total_volume / 2, 3)
-                    pallets = max(1, int(np.ceil(max(pw, pv))))
+                    pw = round(total_weight/1400,3)
+                    pv = round(total_volume/2,3)
+                    pallets = max(1,int(np.ceil(max(pw,pv))))
 
-                    summary_df = pd.DataFrame([{
+                    summary = pd.DataFrame([{
                         "Total Units": int(total_units),
                         "Total Weight (kg)": f"{total_weight:.2f} kg",
                         "Total Volume (m³)": f"{total_volume:.3f} m³",
@@ -264,38 +309,31 @@ if doc_input:
                         "Pallets by Volume": pv,
                         "Pallets Needed": pallets
                     }])
-
                     st.subheader("📊 Estimated Pallet Summary")
-                    st.dataframe(summary_df)
+                    st.dataframe(summary)
 
-                    # download Excel (stock)
+                    # download stock Excel
                     buf1 = io.BytesIO()
                     with pd.ExcelWriter(buf1, engine="openpyxl") as w:
-                        df_result.to_excel(w, index=False, sheet_name="Sheet1")
+                        df_res.to_excel(w, index=False)
                     buf1.seek(0)
                     st.download_button(
                         "📥 Download Excel (Stock)",
-                        data=buf1,
-                        file_name=f"{original_docnum}_stock.xlsx",
+                        buf1,
+                        file_name=f"{original}_stock.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
 
-                    # download Excel (pallets)
+                    # download pallets Excel
                     buf2 = io.BytesIO()
                     with pd.ExcelWriter(buf2, engine="openpyxl") as w:
-                        summary_df.to_excel(w, index=False, sheet_name="Sheet1")
+                        summary.to_excel(w, index=False)
                     buf2.seek(0)
                     st.download_button(
                         "📥 Download Excel (Pallets)",
-                        data=buf2,
-                        file_name=f"{original_docnum}_pallets.xlsx",
+                        buf2,
+                        file_name=f"{original}_pallets.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
-
         except Exception as e:
             st.error(f"Something went wrong: {e}")
-            tb = traceback.format_exc()
-        
-            # 3) Display it (you can also use st.code or put it in an expander)
-            with st.expander("Show full error details"):
-                st.text(tb)
