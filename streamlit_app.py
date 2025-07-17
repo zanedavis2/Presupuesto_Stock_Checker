@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import numpy as np
 import io
+import traceback
 
 # --- AUTH ---
 password = st.text_input("🔐Ingrese la contraseña", type="password")
@@ -337,3 +338,6 @@ if doc_input:
                     )
         except Exception as e:
             st.error(f"Something went wrong: {e}")
+            full_tb = traceback.format_exc()
+            traceback.print_exc()
+            st.error(f"Something went wrong:\n```\n{full_tb}\n```")
