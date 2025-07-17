@@ -274,6 +274,17 @@ if doc_input:
                             return ["font-weight: bold; text-align: right"] * len(r)
                         return [""] * len(r)
 
+                    numeric_cols = [
+                        "Units", "Subtotal > Units",
+                        "Net Weight (kg)", "Total Weight (kg)", "Subtotal > Total Weight (kg)",
+                        "Volume (m³)", "Subtotal > Volume (m³)",
+                        "Stock Disponible", "Falta", "Subtotal > Falta"
+                    ]
+                    
+                    # make sure they’re numeric (you probably already do this)
+                    for c in numeric_cols:
+                        df_res[c] = pd.to_numeric(df_res[c], errors="coerce")
+                    
                     styled = (
                         df_res.style
                               .apply(highlight_rows, axis=1)
