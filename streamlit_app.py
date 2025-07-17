@@ -202,6 +202,19 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
     df = pd.DataFrame(output)
 
+    subtotal_mask = df["Product"].str.contains("Subtotal", na=False)
+
+    subtotal_cols = [
+        "Subtotal > Total Weight (kg)",
+        "Subtotal > Volume (m³)",
+        "Subtotal > Units",
+        "Subtotal > Falta"
+    ]
+    
+    # for those rows only, replace any missing with 0
+    for col in subtotal_cols:
+        df.loc[subtotal_mask, col] = df.loc[subtotal_mask, col].fillna(0)
+
     # Ensure consistent column order
     expected_cols = [
         "Product","SKU","Net Weight (kg)","Total Weight (kg)", "Subtotal > Total Weight (kg)",
