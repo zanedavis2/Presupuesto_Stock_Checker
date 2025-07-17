@@ -142,6 +142,9 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
         grouped.setdefault(subcategory, []).append(product_data)
 
+    for subcat, products in grouped.items():
+        grouped[subcat] = sorted(products, key=lambda x: x.get("SKU") or "")
+        
     # Build final output list
     output = []
     for subcat, products in grouped.items():
