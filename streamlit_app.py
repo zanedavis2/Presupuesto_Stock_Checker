@@ -171,17 +171,27 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         num_falta = subtotal_df['Falta'].sum(min_count=1)
         num_falta = 0 if pd.isna(num_falta) else num_falta
         
-        # Add subtotal row
+       # Compute each subtotal
+        sum_weight = round(subtotal_df["Total Weight (kg)"].sum(min_count=1), 2)
+        sum_volume = round(subtotal_df["Volume (m³)"].sum(min_count=1), 5)
+        sum_units  = round(subtotal_df["Units"].sum(min_count=1), 1)
+
+        # Add a subtotal row that only fills the new Subtotal >… columns
         output.append({
-            "Product": "                                            Subtotal",
+            "Product": f"——— Subtotal {subcat} ———",
             "SKU": "",
             "Net Weight (kg)": "",
-            "Total Weight (kg)": round(subtotal_df["Total Weight (kg)"].sum(min_count=1),2),
-            "Volume (m³)": round(subtotal_df["Volume (m³)"].sum(min_count=1),5),
-            "Units": round(subtotal_df["Units"].sum(min_count=1),1),
+            "Total Weight (kg)": "",
+            "Volume (m³)": "",
+            "Units": "",
             "Stock Disponible": "",
-            "Insuficiente?": f"Falta: {num_falta:.0f}",
-            "Falta": ""
+            "Insuficiente?": "",
+            "Falta": "",
+            # new subtotal columns
+            "Subtotal > Total Weight (kg)": sum_weight,
+            "Subtotal > Volume (m³)":         sum_volume,
+            "Subtotal > Units":                sum_units,
+            "Subtotal > Falta":                num_falta
         })
 
     # If no products matched, return empty DataFrame with expected structure
