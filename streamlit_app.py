@@ -205,8 +205,12 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
 
     # Ensure consistent column order
     expected_cols = [
-        "Product", "SKU", "Net Weight (kg)", "Total Weight (kg)",
-        "Volume (m³)", "Units", "Stock Disponible", "Insuficiente?", "Falta"
+        "Product","SKU","Net Weight (kg)","Total Weight (kg)",
+        "Volume (m³)","Units","Stock Disponible","Insuficiente?","Falta",
+        "Subtotal > Total Weight (kg)",
+        "Subtotal > Volume (m³)",
+        "Subtotal > Units",
+        "Subtotal > Falta"
     ]
     for col in expected_cols:
         if col not in df.columns:
