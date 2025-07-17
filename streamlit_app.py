@@ -16,6 +16,7 @@ HEADERS = {"accept": "application/json", "key": API_KEY}
 PAGE_SIZE = 100
 ENDPOINTS = {
     "Presupuesto": "https://api.holded.com/api/invoicing/v1/documents/estimate",
+    "Proforma": "https://api.holded.com/api/invoicing/v1/documents/proform",
     "Pedido":       "https://api.holded.com/api/invoicing/v1/documents/salesorder"
 }
 PRODUCTS_URL = "https://api.holded.com/api/invoicing/v1/products"
@@ -214,7 +215,7 @@ def get_products_info_for_row(row_idx, df_docs, product_lookup):
 # --- UI ---
 st.title("📦 Presupuesto / Pedido Stock")
 
-doc_type = st.selectbox("Seleccione tipo de documento", ["Presupuesto","Pedido"])
+doc_type = st.selectbox("Seleccione tipo de documento", ["Presupuesto", "Proforma", "Pedido"])
 url = ENDPOINTS[doc_type]
 doc_input = st.text_input(f"Ingrese el número de {doc_type}:")
 
