@@ -266,7 +266,7 @@ if doc_input:
                         total_weight = total_weight if pd.notnull(total_weight) else 0.0
                         total_volume = total_volume if pd.notnull(total_volume) else 0.0
                     
-                        pallets_by_weight = round(total_weight / 1400, 3)
+                        pallets_by_weight = round(total_weight / 1300, 3)
                         pallets_by_volume = round(total_volume / 2, 3)
                         estimated_pallets = int(np.ceil(max(pallets_by_weight, pallets_by_volume)))
                         if estimated_pallets == 0:
