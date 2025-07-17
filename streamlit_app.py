@@ -77,7 +77,7 @@ def get_row_index_by_docnumber(df, doc_number):
 # --- Build Output Table with Subtotals ---
 def get_products_info_for_row(row_idx, df_docs, product_lookup):
     row = df_docs.loc[row_idx]
-    items = row.get('products') or []
+    items = df_docs.at[row_idx, "products"] or []
     if not isinstance(items, list):
         raise TypeError(f"Row {row_idx} 'products' must be a list, got {type(items)}")
 
