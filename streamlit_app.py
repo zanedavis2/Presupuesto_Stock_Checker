@@ -220,6 +220,8 @@ if doc_input:
             if idx is None:
                 st.error(f"{doc_type} not found.")
             else:
+                st.write("📦 Raw document row:")
+                st.write(df_docs.loc[idx])
                 original = df_docs.loc[idx, 'docNumber']
                 df_res = get_products_info_for_row(idx, df_docs, lookup)
 
