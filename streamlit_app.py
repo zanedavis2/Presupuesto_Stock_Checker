@@ -270,10 +270,14 @@ if doc_input:
                         .format({
                             "Net Weight (kg)": "{:.2f}",
                             "Total Weight (kg)": "{:.2f}",
+                            "Subtotal > Total Weight (kg)": "{:.2f}",
                             "Volume (m³)": "{:.3f}",
+                            "Subtotal > Volume (m³)": "{:.3f}",
                             "Units": "{:,.0f}",
+                            "Subtotal > Units":    "{:,.0f}",
                             "Stock Disponible": "{:,.0f}",
                             "Falta": "{:,.0f}",
+                            "Subtotal > Falta":   "{:,.0f}",  
                         }, na_rep="—")  # 👈 this replaces NaN/None with blank
                     )
 
