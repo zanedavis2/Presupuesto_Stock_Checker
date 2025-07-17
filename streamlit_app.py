@@ -88,8 +88,8 @@ def get_products_info_for_row(row_idx, df_docs, product_lookup):
     for item in items:
         pid = item.get('productId') or item.get('id')
         units = item.get('units')
-        #if not pid or pid not in product_lookup:
-            #continue
+        if pid is None or pid not in product_lookup:
+            continue
         info = product_lookup[pid]
         attrs = info.get("Attributes") or []
 
