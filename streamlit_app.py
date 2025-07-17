@@ -257,33 +257,21 @@ if doc_input:
 
                     st.dataframe(styled_df)
 
-                    if not df_result.empty:
-                        total_units = df_result["Units"].sum()
-                        total_weight = df_result["Total Weight (kg)"].sum(min_count=1)
-                        total_volume = df_result["Volume (m³)"].sum(min_count=1)
+                   if not df_result.empty:
+                        # … your existing total_units / total_weight / total_volume / pallets_by_weight / pallets_by_volume / estimated_pallets calc …
                     
-                        # Handle None values
-                        total_weight = total_weight if pd.notnull(total_weight) else 0.0
-                        total_volume = total_volume if pd.notnull(total_volume) else 0.0
+                        # Build a single‐row summary DataFrame
+                        summary_df = pd.DataFrame([{
+                            "Total Units": int(total_units),
+                            "Total Weight (kg)": f"{total_weight:.2f} kg",
+                            "Total Volume (m³)": f"{total_volume:.3f} m³",
+                            "Pallets by Weight": pallets_by_weight,
+                            "Pallets by Volume": pallets_by_volume,
+                            "Pallets Needed": estimated_pallets
+                        }])
                     
-                        pallets_by_weight = round(total_weight / 1300, 3)
-                        pallets_by_volume = round(total_volume / 2, 3)
-                        estimated_pallets = int(np.ceil(max(pallets_by_weight, pallets_by_volume)))
-                        if estimated_pallets == 0:
-                                estimated_pallets = 1
-                    
-                        # Summary table as a DataFrame
-                        summary_df = pd.DataFrame({
-                            "numProducts": [int(total_units), "", ""],
-                            "WEIGHT": [f"{total_weight:.2f} kg", "", ""],
-                            "VOLUME": [f"{total_volume:.3f} m³", "", ""],
-                            "PALLETS": [pallets_by_weight, pallets_by_volume, estimated_pallets],
-                            "": [
-                                "Estimated Pallets by Weight",
-                                "Estimated Pallets by Volume",
-                                "PALLETS NEEDED"
-                            ]
-                        })
+                        st.subheader("📊 Estimated Pallet Summary")
+                        st.dataframe(summary_df)
                         
                         # Set custom row labels: only first row has "TOTAL"
                         summary_df.index = ["TOTAL", "", ""]
