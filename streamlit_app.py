@@ -60,8 +60,6 @@ def build_product_lookup(products):
     lookup = {}
     for p in products:
         pid = p.get("id") or p.get("productId")
-        if not pid:
-            continue
         lookup[pid] = {
             "Product": p.get("name"),
             "SKU": p.get("sku"),
