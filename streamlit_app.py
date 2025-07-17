@@ -281,9 +281,7 @@ if doc_input:
                     )
 
         except Exception as e:
-           st.error(f"Something went wrong: {e}")
-
-            # 2) Grab the full traceback
+            st.error(f"Something went wrong: {e}")
             tb = traceback.format_exc()
         
             # 3) Display it (you can also use st.code or put it in an expander)
