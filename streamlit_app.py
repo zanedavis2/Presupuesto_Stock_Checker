@@ -184,8 +184,8 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
     # If no products matched, return empty DataFrame with expected structure
     if not output:
         return pd.DataFrame(columns=[
-            "Product", "SKU", "Net Weight (kg)", "Total Weight (kg)",
-            "Volume (m³)", "Units", "Stock Disponible", "Insuficiente?", "Falta"
+            "SKU", "Product", "Units", "Net Weight (kg)", "Total Weight (kg)",
+            "Volume (m³)", "Stock Disponible", "Insuficiente?", "Falta"
         ])
 
     df = pd.DataFrame(output)
