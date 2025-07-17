@@ -224,8 +224,7 @@ if doc_input:
                 df_res = get_products_info_for_row(idx, df_docs, lookup)
 
                 if df_res.empty:
-                    st.write(df_docs.loc[idx])
-                    st.warning("No valid products found.")
+                    st.warning("No valid products found. Products likely missing SKU or ID")
                 else:
                     st.success(f"{doc_type} '{original}' loaded!")
 
