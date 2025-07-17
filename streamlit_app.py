@@ -251,17 +251,17 @@ if doc_input:
                     totals = {
                         "SKU": "",
                         "Product": "——— TOTAL ———",
-                        "Units": df_res["Units"].sum(min_count=1),
-                        "Subtotal > Units": "",
-                        "Net Weight (kg)": df_res["Net Weight (kg)"].sum(min_count=1),
-                        "Total Weight (kg)": df_res["Total Weight (kg)"].sum(min_count=1),
-                        "Subtotal > Total Weight (kg)": "",
-                        "Volume (m³)": df_res["Volume (m³)"].sum(min_count=1),
-                        "Subtotal > Volume (m³)": "",
-                        "Stock Disponible": df_res["Stock Disponible"].sum(min_count=1),
+                        "Units": "",
+                        "Subtotal > Units": df_res["Subtotal > Units"].sum(min_count=1),
+                        "Net Weight (kg)": "",
+                        "Total Weight (kg)": "",
+                        "Subtotal > Total Weight (kg)": df_res["Subtotal > Total Weight (kg)"].sum(min_count=1),
+                        "Volume (m³)": "",
+                        "Subtotal > Volume (m³)": df_res["Subtotal > Volume (m³)"].sum(min_count=1),
+                        "Stock Disponible": "",
                         "Insuficiente?": "",
-                        "Falta": df_res["Falta"].sum(min_count=1),
-                        "Subtotal > Falta": ""
+                        "Falta": "",
+                        "Subtotal > Falta": df_res["Subtotal > Falta"].sum(min_count=1)
                     }
                     df_res = pd.concat([df_res, pd.DataFrame([totals])], ignore_index=True)
 
