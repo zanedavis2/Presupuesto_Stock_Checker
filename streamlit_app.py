@@ -279,5 +279,5 @@ if doc_input:
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
 
-        except Exception as e:
-            st.error(f"Something went wrong: {e}")
+        #except Exception as e:
+            #st.error(f"Something went wrong: {e}")
