@@ -257,7 +257,7 @@ if doc_input:
 
                     st.dataframe(styled_df)
 
-                   if not df_result.empty:
+                    if not df_result.empty:
                         # … your existing total_units / total_weight / total_volume / pallets_by_weight / pallets_by_volume / estimated_pallets calc …
                     
                         # Build a single‐row summary DataFrame
