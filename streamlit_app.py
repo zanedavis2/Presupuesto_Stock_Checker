@@ -212,23 +212,6 @@ if doc_input:
                 else:
                     st.success(f"{doc_type} '{original_docnum}' details loaded!")
 
-                    # numeric conversion
-                    num_cols = ["Net Weight (kg)","Total Weight (kg)","Volume (m³)","Units","Stock Disponible","Falta"]
-                    for c in num_cols:
-                        df_result[c] = pd.to_numeric(df_result[c], errors='coerce')
-
-                    # Add overall TOTAL row
-                    totals = {
-                        "Product": "——— TOTAL ———",
-                        **{c: "" for c in ["SKU","Insuficiente?","Falta"]},
-                        "Net Weight (kg)": df_result["Net Weight (kg)"].sum(min_count=1),
-                        "Total Weight (kg)": df_result["Total Weight (kg)"].sum(min_count=1),
-                        "Volume (m³)": df_result["Volume (m³)"].sum(min_count=1),
-                        "Units": df_result["Units"].sum(min_count=1),
-                        "Stock Disponible": ""
-                    }
-                    df_result = pd.concat([df_result, pd.DataFrame([totals])], ignore_index=True)
-
                     # styling
                     def highlight_headers(row):
                         prod = str(row["Product"])
