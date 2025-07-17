@@ -213,7 +213,7 @@ def get_products_info_for_row(row_idx, df_docs, product_lookup):
     return df[cols]
 
 # --- UI ---
-st.title("📦 Presupuesto / Pedido Stock")
+st.title("📦Informaciòn del Documento")
 
 doc_type = st.selectbox("Seleccione tipo de documento", ["Presupuesto", "Proforma", "Pedido"])
 url = ENDPOINTS[doc_type]
