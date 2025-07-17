@@ -284,15 +284,6 @@ if doc_input:
                     
                         st.subheader("📊 Estimated Pallet Summary")
                         st.dataframe(summary_df)
-                        
-                        # Set custom row labels: only first row has "TOTAL"
-                        summary_df.index = ["TOTAL", "", ""]
-                        
-                        # Reorder columns so Description is at the far right
-                        summary_df = summary_df[["numProducts", "WEIGHT", "VOLUME", "PALLETS", ""]]
-                    
-                        st.subheader("📊 Estimated Pallet Summary")
-                        st.dataframe(summary_df)
 
                     filename=f"{original_docnum}_stock.xlsx"
                     excel_buffer = io.BytesIO()
