@@ -59,7 +59,7 @@ def build_product_lookup(products):
         lookup[pid] = {
             "Product": p.get("name"),
             "SKU": p.get("sku"),
-            "Stock Disponible": p.get("stock"),
+            "Stock Real": p.get("stock"),
             "Attributes": p.get("attributes")
         }
     return lookup
@@ -124,7 +124,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
         if None not in (ancho, alto, fondo):
             volume = round((ancho * alto * fondo) / 1_000_000, 5)
 
-        stock = info.get("Stock Disponible", 0)
+        stock = info.get("Stock Real", 0)
         insuf = "" if not info.get("SKU") or stock >= units else "STOCK INSUFICIENTE"
         falta = "" if stock >= units else abs(stock - units)
 
@@ -135,7 +135,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "Total Weight (kg)": round(net_w * units, 3) if units is not None and net_w is not None else None,
             "Volume (m³)": volume,
             "Units": units,
-            "Stock Disponible": stock,
+            "Stock Real": stock,
             "Insuficiente?": insuf,
             "Falta": falta,
         }
@@ -156,7 +156,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "Total Weight (kg)": "",
             "Volume (m³)": "",
             "Units": "",
-            "Stock Disponible": "",
+            "Stock Real": "",
             "Insuficiente?": "",
             "Falta": "",
         })
@@ -187,7 +187,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
             "Subtotal > Volume (m³)":         sum_volume,
             "Units": "",
             "Subtotal > Units":                sum_units,
-            "Stock Disponible": "",
+            "Stock Real": "",
             "Insuficiente?": "",
             "Falta": "",            
             "Subtotal > Falta":                num_falta
@@ -197,7 +197,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
     if not output:
         return pd.DataFrame(columns=[
             "SKU", "Product", "Units", "Net Weight (kg)", "Total Weight (kg)",
-            "Volume (m³)", "Stock Disponible", "Insuficiente?", "Falta"
+            "Volume (m³)", "Stock Real", "Insuficiente?", "Falta"
         ])
 
     df = pd.DataFrame(output)
@@ -223,7 +223,7 @@ def get_products_info_for_row(row_idx, df_presupuesto, product_lookup):
     # Ensure consistent column order
     expected_cols = [
         "SKU","Product", "Units", "Subtotal > Units" ,"Net Weight (kg)","Total Weight (kg)", "Subtotal > Total Weight (kg)",
-        "Volume (m³)", "Subtotal > Volume (m³)","Stock Disponible","Insuficiente?","Falta", "Subtotal > Falta"
+        "Volume (m³)", "Subtotal > Volume (m³)","Stock Real","Insuficiente?","Falta", "Subtotal > Falta"
     ]
     for col in expected_cols:
         if col not in df.columns:
@@ -255,7 +255,7 @@ if doc_input:
                 else:
                     st.success(f"Presupuesto '{original_docnum}' details loaded!")
                     # Convert numeric columns safely
-                    for col in ["Net Weight (kg)", "Total Weight (kg)", "Volume (m³)", "Units", "Stock Disponible", "Falta"]:
+                    for col in ["Net Weight (kg)", "Total Weight (kg)", "Volume (m³)", "Units", "Stock Real", "Falta"]:
                         df_result[col] = pd.to_numeric(df_result[col], errors='coerce')
                     
                     # Style function for subcategory header rows
@@ -280,7 +280,7 @@ if doc_input:
                             "Subtotal > Volume (m³)": "{:.3f}",
                             "Units": "{:,.0f}",
                             "Subtotal > Units":    "{:,.0f}",
-                            "Stock Disponible": "{:,.0f}",
+                            "Stock Real": "{:,.0f}",
                             "Falta": "{:,.0f}",
                             "Subtotal > Falta":   "{:,.0f}",  
                         }, na_rep="—")  # 👈 this replaces NaN/None with blank
