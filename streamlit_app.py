@@ -220,6 +220,18 @@ if doc_input:
                             return ["font-weight: bold; background-color: #f0f0f0"] * len(row)
                         return [""] * len(row)
 
+                    numeric_cols = [
+                        "Net Weight (kg)",
+                        "Total Weight (kg)",
+                        "Volume (m³)",
+                        "Units",
+                        "Stock Disponible",
+                        "Falta"
+                    ]
+                    
+                    # this will turn any leftover strings ("" or "—" or anything) into NaN
+                    df_result[numeric_cols] = df_result[numeric_cols].apply(pd.to_numeric, errors="coerce")
+                    
                     styled_df = (
                         df_result.style
                                  .apply(highlight_headers, axis=1)
